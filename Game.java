@@ -1,10 +1,13 @@
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+
 import javax.swing.JOptionPane;
 
 public class Game {
 	static Client gameClient;
 	static Game currentGame;
 	Display display; Server server; Client client; PlayerConnection player; private Animation animator; private Window windowhandler;
-	String state = "";// private Maze maze;
+	String state = ""; ArrayList<Rectangle2D> barriers = new ArrayList<>();
 	Game() {
 		currentGame = this;
 		this.display = new Display(this);
