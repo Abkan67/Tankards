@@ -90,6 +90,15 @@ public class Client extends Thread{
         int ySteps = p.getyPos() - player.getY();
         player.move(xSteps, ySteps);
     }
+    public void anglePlayer(Protocol.MOUSEMOVE03PACKET p) {
+        PlayerConnection player = this.findPlayer(p.getID());
+        player.deg = p.getAngle();
+    }
+    public void anglePlayer(Protocol.MOUSECLICK04PACKET p) {
+        PlayerConnection player = this.findPlayer(p.getID());
+        player.deg = p.getAngle();
+        player.shoot();
+    }
 
     public PlayerConnection loginSelf(Game game, String name, int x, int y, boolean isHost){
 		PlayerConnection player = new PlayerConnection(name, x, y, new Input(game), -1, isHost);

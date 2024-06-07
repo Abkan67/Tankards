@@ -75,10 +75,34 @@ public class Server extends Thread {
 		player.move(xSteps, ySteps);
 		sendDataToAllCients(p.getDataToSendToClients());
 	}
+	public void anglePlayer(Protocol.MOUSEMOVE03PACKET p) {
+		PlayerConnection player = findPlayer(p.getID());
+		if (player==null) {return;}
+		player.deg = p.getAngle();
+		sendDataToAllCients(p.getDataToSendToClients());
+		
+	}
 	public void setState(String state){
 		this.state = state;
 	}
+	public void movemousePlayer(Protocol.MOUSEMOVE03PACKET p) {
+		PlayerConnection player = findPlayer(p.getID());
+		if(player==null) return;
+		player.angle(p.getAngle());
+		this.sendDataToAllCients(p.getDataToSendToClients());
+		
+	}
+
+	public void mouseclickPlayer(Protocol.MOUSECLICK04PACKET p) {
+		PlayerConnection player = findPlayer(p.getID());
+		if(player==null) return;
+		player.angle(p.getAngle());
+		player.shoot();
+		this.sendDataToAllCients(p.getDataToSendToClients());
+	}
+	
 	public ArrayList<PlayerConnection> getConnectedPlayers(){return this.connectedPlayers;}
+
 	
 	
 

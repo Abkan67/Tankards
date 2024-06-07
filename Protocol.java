@@ -26,6 +26,14 @@ public class Protocol {
 			server.setState(p.getState());
 			server.sendDataToAllCients(p.getData());
 		}
+		if(type.equals("MOUSEMOVE")) {
+			MOUSEMOVE03PACKET p = new MOUSEMOVE03PACKET(data, address, port);
+			server.movemousePlayer(p);
+		}
+		if(type.equals("MOUSECLICK")) {
+			MOUSECLICK04PACKET p = new MOUSECLICK04PACKET(data, address, port);
+			server.mouseclickPlayer(p);
+		}
 	}
 	
 	public static void handleServerData(byte[] data, Client client) {
@@ -53,6 +61,18 @@ public class Protocol {
 			CHANGESTATE11PACKET p = new CHANGESTATE11PACKET(data);
 			Game.currentGame.setState(p.getState());
 		}
+		if(type.equals("MOUSEMOVE")) {
+			MOUSEMOVE03PACKET p = new MOUSEMOVE03PACKET(data);
+			if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
+			client.anglePlayer(p);
+			
+		}
+		if(type.equals("MOUSECLICK")) {
+			MOUSECLICK04PACKET p = new MOUSECLICK04PACKET(data);
+			if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
+			client.anglePlayer(p);
+			
+		}
 	}
 	
 
@@ -63,6 +83,8 @@ public class Protocol {
 		case "00": return "LOGIN";
 		case "01": return "DISCONNECT";
 		case "02": return "MOVE";
+		case "03": return "MOUSEMOVE";
+		case "04": return "MOUSECLICK";
 		case "10": return "CONFIRMLOGIN";
 		case "11": return "CHANGESTATE";
 		default: return "INVALID";
@@ -72,33 +94,7 @@ public class Protocol {
 	
 		//Packets will be in charge of packing and reconstructing themselves
 		private static String getFormattedData(byte[] data){return new String(data).trim().substring(2)+";";}
-		static class MOVE02PACKET {
-			private int port; private InetAddress address; private byte[] data; private int ID; private int xPos; private int yPos;
-			public InetAddress getIP() {return this.address;}
-			public int getPort() {return this.port;}
-			public int getxPos() {return this.xPos;}
-			public int getyPos() {return this.yPos;}
-			public int getID() {return this.ID;}
 
-			MOVE02PACKET(byte[] data, InetAddress address, int port){
-				this.port = port; this.address=address; this.data=data; String[] allData = getFormattedData(this.data).split(";");
-				this.ID = Integer.parseInt(allData[0]);
-				this.xPos = Integer.parseInt(allData[1]);
-				this.yPos = Integer.parseInt(allData[2]);
-			}
-			public byte[] getDataToSendToClients() {return ( "02"+this.ID+";"+this.xPos+";"+this.yPos+";" ).getBytes();}
-
-			MOVE02PACKET(byte[] data){
-				String[] allData = getFormattedData(data).split(";");
-				this.ID = Integer.parseInt(allData[0]);
-				this.xPos = Integer.parseInt(allData[1]);
-				this.yPos = Integer.parseInt(allData[2]);
-			}
-
-			public static byte[] createPacket(int ID, int x, int y){
-				return ( "02"+ID+";"+x+";"+y+";" ).getBytes();
-			}
-		}
 		static class LOGIN00PACKET {
 			public static byte[] createPacket(String name, int x, int y, int ID, boolean isHost){
 				return ("00"+name+";"+x+";"+y+";"+ID+";"+ (isHost ? 0:1)+";").getBytes();
@@ -188,6 +184,85 @@ public class Protocol {
 			}
 
 			public static byte[] createPacket(int ID){return ( "01"+ID+";" ).getBytes();} 
+		}
+		static class MOVE02PACKET {
+			private int port; private InetAddress address; private byte[] data; private int ID; private int xPos; private int yPos;
+			public InetAddress getIP() {return this.address;}
+			public int getPort() {return this.port;}
+			public int getxPos() {return this.xPos;}
+			public int getyPos() {return this.yPos;}
+			public int getID() {return this.ID;}
+
+			MOVE02PACKET(byte[] data, InetAddress address, int port){
+				this.port = port; this.address=address; this.data=data; String[] allData = getFormattedData(this.data).split(";");
+				this.ID = Integer.parseInt(allData[0]);
+				this.xPos = Integer.parseInt(allData[1]);
+				this.yPos = Integer.parseInt(allData[2]);
+			}
+			public byte[] getDataToSendToClients() {return ( "02"+this.ID+";"+this.xPos+";"+this.yPos+";" ).getBytes();}
+
+			MOVE02PACKET(byte[] data){
+				String[] allData = getFormattedData(data).split(";");
+				this.ID = Integer.parseInt(allData[0]);
+				this.xPos = Integer.parseInt(allData[1]);
+				this.yPos = Integer.parseInt(allData[2]);
+			}
+
+			public static byte[] createPacket(int ID, int x, int y){
+				return ( "02"+ID+";"+x+";"+y+";" ).getBytes();
+			}
+		}
+		static class MOUSECLICK04PACKET {
+			private int port; private InetAddress address; private byte[] data; private int ID;
+			private double angle;
+			public InetAddress getIP() {return this.address;}
+			public int getPort() {return this.port;}
+			public int getID() {return this.ID;}
+			public double getAngle() {return this.angle;}
+
+			
+			public MOUSECLICK04PACKET (byte[] data, InetAddress address, int port) {
+				this.port = port; this.address=address; this.data=data; String[] allData = getFormattedData(this.data).split(";");
+				this.ID = Integer.parseInt(allData[0]);
+				this.angle = Double.parseDouble(allData[1]);
+				
+			}
+			public byte[] getDataToSendToClients() {return ("04"+this.ID+";"+this.angle+";").getBytes();}
+			
+			MOUSECLICK04PACKET (byte[] data) {
+				String[] allData = getFormattedData(data).split(";");
+				this.ID = Integer.parseInt(allData[0]);
+				this.angle = Double.parseDouble(allData[1]);
+			}
+			public static byte[] createPacket(int ID, double angle) {
+				return ("04"+ID+";"+angle+";").getBytes();
+			}
+		}
+		static class MOUSEMOVE03PACKET {
+			private int port; private InetAddress address; private byte[] data; private int ID;
+			private double angle;
+			public InetAddress getIP() {return this.address;}
+			public int getPort() {return this.port;}
+			public int getID() {return this.ID;}
+			public double getAngle() {return this.angle;}
+			
+			public MOUSEMOVE03PACKET (byte[] data, InetAddress address, int port) {
+				this.port = port; this.address=address; this.data=data; String[] allData = getFormattedData(this.data).split(";");
+				this.ID = Integer.parseInt(allData[0]);
+				this.angle = Double.parseDouble(allData[1]);
+				
+			}
+			public byte[] getDataToSendToClients() {return ("03"+this.ID+";"+this.angle+";").getBytes();}
+			
+			MOUSEMOVE03PACKET (byte[] data) {
+				String[] allData = getFormattedData(data).split(";");
+				this.ID = Integer.parseInt(allData[0]);
+				this.angle = Double.parseDouble(allData[1]);
+			}
+			public static byte[] createPacket(int ID, double angle) {
+				return ("03"+ID+";"+angle+";").getBytes();
+			}
+			
 		}
 
 }
