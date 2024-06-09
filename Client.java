@@ -1,3 +1,4 @@
+import java.io.Console;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -32,7 +33,7 @@ public class Client extends Thread{
                     e.printStackTrace(); closeEverything();
                 }
             String incomingMessage = new String(packet.getData());
-            System.out.println("Client: Look at that! The Server Sent-> "+ incomingMessage);
+//            System.out.println("Client: Look at that! The Server Sent-> "+ incomingMessage);
             this.handleData(packet);
         }
     }
@@ -86,18 +87,23 @@ public class Client extends Thread{
     }
     public void movePlayer(Protocol.MOVE02PACKET p){
         PlayerConnection player = this.findPlayer(p.getID());
+        if(player==null) return;
         int xSteps = p.getxPos() - player.getX();
         int ySteps = p.getyPos() - player.getY();
         player.move(xSteps, ySteps);
     }
-    public void anglePlayer(Protocol.MOUSEMOVE03PACKET p) {
+    public void anglePlayer(Protocol.CHANGEANGLE03PACKET p) {
         PlayerConnection player = this.findPlayer(p.getID());
-        player.deg = p.getAngle();
+        if(player==null) return;
+        player.mouseX=p.getX();
+        player.mouseY=p.getY();
+      //  player.setName(""+Game.currentGame.player.getID()+", "+p.getID());
     }
-    public void anglePlayer(Protocol.MOUSECLICK04PACKET p) {
+    public void playerShoot(Protocol.MOUSECLICK04PACKET p) {
         PlayerConnection player = this.findPlayer(p.getID());
+        if(player==null) return;
         player.deg = p.getAngle();
-        player.shoot();
+        player.shoot(player.deg);
     }
 
     public PlayerConnection loginSelf(Game game, String name, int x, int y, boolean isHost){

@@ -26,9 +26,9 @@ public class Protocol {
 			server.setState(p.getState());
 			server.sendDataToAllCients(p.getData());
 		}
-		if(type.equals("MOUSEMOVE")) {
-			MOUSEMOVE03PACKET p = new MOUSEMOVE03PACKET(data, address, port);
-			server.movemousePlayer(p);
+		if(type.equals("CHANGEANGLE")) {
+			CHANGEANGLE03PACKET p = new CHANGEANGLE03PACKET(data, address, port);
+			server.changeAnglePlayer(p);
 		}
 		if(type.equals("MOUSECLICK")) {
 			MOUSECLICK04PACKET p = new MOUSECLICK04PACKET(data, address, port);
@@ -61,16 +61,16 @@ public class Protocol {
 			CHANGESTATE11PACKET p = new CHANGESTATE11PACKET(data);
 			Game.currentGame.setState(p.getState());
 		}
-		if(type.equals("MOUSEMOVE")) {
-			MOUSEMOVE03PACKET p = new MOUSEMOVE03PACKET(data);
-			if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
+		if(type.equals("CHANGEANGLE")) {
+			CHANGEANGLE03PACKET p = new CHANGEANGLE03PACKET(data);
+			//if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
 			client.anglePlayer(p);
 			
 		}
 		if(type.equals("MOUSECLICK")) {
 			MOUSECLICK04PACKET p = new MOUSECLICK04PACKET(data);
 			if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
-			client.anglePlayer(p);
+			client.playerShoot(p);
 			
 		}
 	}
@@ -83,7 +83,7 @@ public class Protocol {
 		case "00": return "LOGIN";
 		case "01": return "DISCONNECT";
 		case "02": return "MOVE";
-		case "03": return "MOUSEMOVE";
+		case "03": return "CHANGEANGLE";
 		case "04": return "MOUSECLICK";
 		case "10": return "CONFIRMLOGIN";
 		case "11": return "CHANGESTATE";
@@ -149,7 +149,7 @@ public class Protocol {
 			private InetAddress address; private int port; private String state; private byte[] data;
 			public static byte[] createPacket(String state){ return ("11"+findState(state)+";").getBytes();}
 			private static String findState(int state){switch(state){case 1: return "LOAD"; case 2: return "playing";default:return "INVALID";}}
-			private static int findState(String state){switch(state){case "playing": return 2; default: return 0;}}
+			private static int findState(String state){switch(state){case "playing": return 2; case "LOAD": return 1; default: return 0;}}
 
 			public CHANGESTATE11PACKET(byte[] data, InetAddress address, int port){
 				this.port=port; this.address = address; this.data = data;
@@ -238,29 +238,32 @@ public class Protocol {
 				return ("04"+ID+";"+angle+";").getBytes();
 			}
 		}
-		static class MOUSEMOVE03PACKET {
+		static class CHANGEANGLE03PACKET {
 			private int port; private InetAddress address; private byte[] data; private int ID;
-			private double angle;
+			private double xVal, yVal;
 			public InetAddress getIP() {return this.address;}
 			public int getPort() {return this.port;}
 			public int getID() {return this.ID;}
-			public double getAngle() {return this.angle;}
+			public double getX() {return xVal;}
+			public double getY() {return yVal;}
 			
-			public MOUSEMOVE03PACKET (byte[] data, InetAddress address, int port) {
+			public CHANGEANGLE03PACKET (byte[] data, InetAddress address, int port) {
 				this.port = port; this.address=address; this.data=data; String[] allData = getFormattedData(this.data).split(";");
 				this.ID = Integer.parseInt(allData[0]);
-				this.angle = Double.parseDouble(allData[1]);
+				this.xVal = Double.parseDouble(allData[1]);
+				this.yVal = Double.parseDouble(allData[2]);
 				
 			}
-			public byte[] getDataToSendToClients() {return ("03"+this.ID+";"+this.angle+";").getBytes();}
+			public byte[] getDataToSendToClients() {return ("03"+this.ID+";"+this.xVal+";"+this.yVal+";").getBytes();}
 			
-			MOUSEMOVE03PACKET (byte[] data) {
+			CHANGEANGLE03PACKET (byte[] data) {
 				String[] allData = getFormattedData(data).split(";");
 				this.ID = Integer.parseInt(allData[0]);
-				this.angle = Double.parseDouble(allData[1]);
+				this.xVal = Double.parseDouble(allData[1]);
+				this.yVal = Double.parseDouble(allData[2]);
 			}
-			public static byte[] createPacket(int ID, double angle) {
-				return ("03"+ID+";"+angle+";").getBytes();
+			public static byte[] createPacket(int ID, double xVal, double yVal) {
+				return ("03"+ID+";"+xVal+";"+yVal+";").getBytes();
 			}
 			
 		}

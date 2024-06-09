@@ -3,13 +3,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 public class Display extends JComponent{
 	
@@ -33,15 +28,34 @@ public class Display extends JComponent{
 		if(Game.currentGame.state.equals("connecting")){
 			this.drawConnecting(g);
 		}
+		if(Game.currentGame.state.equals("victory")) {
+			drawVictory(g);
+		}
 		if(Game.currentGame.state.equals("playing")){
 			g.setColor(Color.black);
-			
+			int alivePlayers = 0;
+
 			for(PlayerConnection playerConnection: this.game.client.getAllPlayers()){
 				playerConnection.update(g);
+				alivePlayers+= playerConnection.isAlive?1:0;
+			}
+			if(alivePlayers<=1) {
+				Game.currentGame.state="victory";
 			}
 		}
 	}
 
+	public void drawVictory(Graphics2D g) {
+		g.setColor(Color.blue);
+		g.fillRect(50,50,100,50);
+		for(PlayerConnection playerConnection: this.game.client.getAllPlayers()){
+			playerConnection.draw(g);
+			if(playerConnection.isAlive) {
+				g.setColor(Color.black);
+				g.drawString(playerConnection.getName()+" has won!!!", 50, 50);
+			}
+		}
+	}
 	public void drawConnecting(Graphics2D g) {
 		g.setColor(new Color(50,150,0));
 		g.fillRect(0,0, getWidth(), getHeight());

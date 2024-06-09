@@ -1,6 +1,5 @@
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-
 import javax.swing.JOptionPane;
 
 public class Game {
@@ -27,8 +26,8 @@ public class Game {
 			server.start();
 			client = new Client("localhost", serverPort, this);
 		} else{
-			address = JOptionPane.showInputDialog(this.display, "Where is your host? (use # to access presets)");
-			port = JOptionPane.showInputDialog(this.display, "What is the host's number code?");
+			address = "#";//JOptionPane.showInputDialog(this.display, "Where is your host? (use # to access presets)");
+			port = "3000";//JOptionPane.showInputDialog(this.display, "What is the host's number code?");
 			client = new Client(Client.decodeAddress(address), Integer.parseInt(port), this);
 		}
 		

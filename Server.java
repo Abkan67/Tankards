@@ -24,7 +24,7 @@ public class Server extends Thread {
 			
 			String message = new String(packet.getData());
 			if(message!=null) {
-				System.out.println("Message from Client: "+message);
+//				System.out.println("Message from Client: "+message);
                 this.handlePacket(packet);
 			}
 		}
@@ -75,29 +75,23 @@ public class Server extends Thread {
 		player.move(xSteps, ySteps);
 		sendDataToAllCients(p.getDataToSendToClients());
 	}
-	public void anglePlayer(Protocol.MOUSEMOVE03PACKET p) {
-		PlayerConnection player = findPlayer(p.getID());
-		if (player==null) {return;}
-		player.deg = p.getAngle();
-		sendDataToAllCients(p.getDataToSendToClients());
-		
-	}
 	public void setState(String state){
 		this.state = state;
 	}
-	public void movemousePlayer(Protocol.MOUSEMOVE03PACKET p) {
+	public void changeAnglePlayer(Protocol.CHANGEANGLE03PACKET p) {
 		PlayerConnection player = findPlayer(p.getID());
 		if(player==null) return;
-		player.angle(p.getAngle());
-		this.sendDataToAllCients(p.getDataToSendToClients());
+		player.mouseX = p.getX();
+		player.mouseY = p.getY();
+		this.sendDataToAllCients(p.getDataToSendToClients()); //does this send an updated thing?
 		
 	}
 
 	public void mouseclickPlayer(Protocol.MOUSECLICK04PACKET p) {
 		PlayerConnection player = findPlayer(p.getID());
 		if(player==null) return;
-		player.angle(p.getAngle());
-		player.shoot();
+		player.setAngle(p.getAngle());
+	//	player.shoot(player.deg);
 		this.sendDataToAllCients(p.getDataToSendToClients());
 	}
 	

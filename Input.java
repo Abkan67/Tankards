@@ -1,4 +1,3 @@
-import java.awt.MouseInfo;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -8,7 +7,9 @@ import java.awt.geom.Point2D;
 public class Input implements KeyListener, MouseListener{
     private Game game;
     public InputKey rightArrow = new InputKey();public InputKey leftArrow = new InputKey();
-    public InputKey downArrow = new InputKey();public InputKey upArrow = new InputKey(); private boolean mouseAiming; public Point2D cursorPos = new Point2D.Double();
+    public InputKey downArrow = new InputKey();public InputKey upArrow = new InputKey();
+     private boolean mouseAiming; public Point2D cursorPos = new Point2D.Double();
+     
     Input(Game game){
         this.game=game;
         this.game.display.getFrame().addKeyListener(this);this.game.display.getFrame().addMouseListener(this);
@@ -70,7 +71,8 @@ public class Input implements KeyListener, MouseListener{
 			public void run() {
 				// TODO Auto-generated method stub
 				while(mouseAiming) {
-					cursorPos = new Point2D.Double(MouseInfo.getPointerInfo().getLocation().getX(),MouseInfo.getPointerInfo().getLocation().getY());
+					cursorPos = new Point2D.Double(game.display.getMousePosition().getX(),game.display.getMousePosition().getY());
+		            Game.gameClient.sendData(Protocol.CHANGEANGLE03PACKET.createPacket(Game.currentGame.player.ID, cursorPos.getX(), cursorPos.getY()));
 				}
 			}
 			
