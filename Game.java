@@ -5,6 +5,9 @@ import javax.swing.JOptionPane;
 public class Game {
 	static Client gameClient;
 	static Game currentGame;
+	public static int gameWidth = 15;
+	public static int gameHeight = 10;
+	public Maze maze;
 	Display display; Server server; Client client; PlayerConnection player; private Animation animator; private Window windowhandler;
 	String state = ""; ArrayList<Rectangle2D> barriers = new ArrayList<>();
 	Game() {
@@ -20,6 +23,7 @@ public class Game {
 		String port ="", address = "";
 		int willRunServer = JOptionPane.showConfirmDialog(this.display, "Host Game", "Join Local Game", JOptionPane.YES_NO_OPTION);
 		if(willRunServer==0) {
+			this.maze = Maze.makeMaze();
 			int serverPort = Server.portConnected;
 			server = new Server(serverPort);
 			JOptionPane.showMessageDialog(this.display, "Your code is "+serverPort);
@@ -48,11 +52,26 @@ public class Game {
 		this.animator.stop();this.client.closeEverything(); 
 		if(this.server!=null){this.server.closeEverything();}
 	}
-//	public Maze getMaze(){return maze;}
 	public void setState(String state){this.state = state;}
+	public String getState(){return this.state;}
 
 	public static void main(String[] args) {
 		new Game();
+	}
+	public void setBarriers() {
+		int[][] maze = this.maze.getMaze();
+		for(int row = 0; row<maze.length; row++){
+			for(int col = 0; col<maze[0].length; col++) {
+				if(maze[row][col] == 1) {
+					this.barriers.add(
+						new Rectangle2D.Double(this.display.getWidth()*col/maze[row].length,
+						this.display.getHeight()*row/maze.length,
+						this.display.getWidth()/maze[row].length,
+						this.display.getHeight()/maze.length)
+					);
+				}
+			}
+		}
 	}
 
 }

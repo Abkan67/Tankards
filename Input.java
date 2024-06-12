@@ -22,9 +22,26 @@ public class Input implements KeyListener, MouseListener{
         public void changePress(boolean pressed) {this.isPressed = pressed;}
     }
     public void keyPressed(KeyEvent e) {
-        this.keyEvent(e.getKeyCode(), true);
+        this.keyEvent(e.getKeyCode(), true); //handles movement
         if(Game.currentGame.state.equals("connecting")&&Game.currentGame.player.isHost()&&e.getKeyCode() == KeyEvent.VK_ENTER){
-            Game.currentGame.client.sendData(Protocol.CHANGESTATE11PACKET.createPacket("playing"));
+            int i = 0;
+            for(PlayerConnection player: Game.currentGame.client.getAllPlayers()) {
+                Point2D.Double p = getStartingLocation(i++);
+                Game.currentGame.client.sendData(Protocol.MOVE02PACKET.createPacket(player.getID(), (int)p.getX(), (int)p.getY()));
+            }
+            //Maze maze = new Maze(4, 3, 3);
+            Game.currentGame.client.sendData(Protocol.CHANGESTATE11PACKET.createPacket("playing", Maze.dissembleMaze(Game.currentGame.maze)));
+        }
+    }
+    public Point2D.Double getStartingLocation(int i) {
+        int height = Game.currentGame.display.getHeight();
+        int width = Game.currentGame.display.getWidth();
+        switch(i) {
+            case 0: return new Point2D.Double(0,0);
+            case 1: return new Point2D.Double((double)width-Player.playerDims, (double)height-Player.playerDims);
+            case 2: return new Point2D.Double((double)width-Player.playerDims,0);
+            case 3: return new Point2D.Double(0,(double)height-Player.playerDims);
+            default: return new Point2D.Double(0,0);
         }
     }
     public void keyReleased(KeyEvent e) {
@@ -53,8 +70,8 @@ public class Input implements KeyListener, MouseListener{
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		game.player.shoot(game.player.deg);
-		Game.gameClient.sendData(Protocol.MOUSECLICK04PACKET.createPacket(Game.currentGame.player.ID, Game.currentGame.player.deg));
+		if(game.player.shoot(game.player.deg))
+		    Game.gameClient.sendData(Protocol.MOUSECLICK04PACKET.createPacket(Game.currentGame.player.ID, Game.currentGame.player.deg));
 	}
 	@Override
 	public void mouseReleased(MouseEvent e) {

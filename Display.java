@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
@@ -12,11 +13,16 @@ public class Display extends JComponent{
 	Display(Game game) {
 		this.game=game;
 		this.frame = new JFrame();
-		this.frame.setSize(400,400);
+		this.frame.setSize(850,650);
+		this.frame.setResizable(false);
 		this.frame.setTitle("Untitles Tank Game");
 		this.frame.setDefaultCloseOperation(3);
 		this.frame.add(this);
 		this.frame.setVisible(true);
+
+
+
+
 	}
 	
 	public JFrame getFrame(){return this.frame;}
@@ -32,27 +38,42 @@ public class Display extends JComponent{
 			drawVictory(g);
 		}
 		if(Game.currentGame.state.equals("playing")){
-			g.setColor(Color.black);
-			int alivePlayers = 0;
-
-			for(PlayerConnection playerConnection: this.game.client.getAllPlayers()){
-				playerConnection.update(g);
-				alivePlayers+= playerConnection.isAlive?1:0;
-			}
-			if(alivePlayers<=1) {
-				Game.currentGame.state="victory";
-			}
+			drawPlaying(g);
 		}
 	}
 
+	public void drawPlaying(Graphics2D g) {
+		g.setColor(Color.black);
+		int alivePlayers = 0;
+
+		drawMaze(g, Game.currentGame.maze.getMaze());
+
+		for(PlayerConnection playerConnection: this.game.client.getAllPlayers()){
+			playerConnection.update(g);
+			alivePlayers+= playerConnection.isAlive?1:0;
+		}
+		if(alivePlayers<=1) {
+			Game.currentGame.state="victory";
+		}
+
+	}
+	public void drawMaze(Graphics2D g, int[][] maze) {
+		for (int r = 0; r < maze.length; r++) {
+			for (int c = 0; c < maze[r].length; c++) {
+				g.setColor(Color.black);
+				if (maze[r][c]==1) {g.fill(new Rectangle2D.Double(getWidth()*c/maze[r].length,
+					getHeight()*r/maze.length,getWidth()/maze[r].length,getHeight()/maze.length));}
+			}
+		}
+	}
 	public void drawVictory(Graphics2D g) {
 		g.setColor(Color.blue);
 		g.fillRect(50,50,100,50);
 		for(PlayerConnection playerConnection: this.game.client.getAllPlayers()){
-			playerConnection.draw(g);
 			if(playerConnection.isAlive) {
+				playerConnection.draw(g);
 				g.setColor(Color.black);
-				g.drawString(playerConnection.getName()+" has won!!!", 50, 50);
+				g.drawString(playerConnection.getName()+" has won!!!", 50, 70);
 			}
 		}
 	}

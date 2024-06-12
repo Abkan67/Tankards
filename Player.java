@@ -5,6 +5,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 public class Player {
+	public static int playerDims = 50;
 	public double vx, vy, x, y, speed = 1, deg; private String name; private Input input; public int ID; private Rectangle2D body, turret;
 	private ArrayList<Bullet> bullets = new ArrayList<>();
 	public double mouseX, mouseY;
@@ -19,7 +20,7 @@ public class Player {
 	
 	public void draw(Graphics2D g) {
 		g.drawString(""+this.name, (int)this.x, (int)this.y);
-		body = new Rectangle((int)this.x, (int)this.y, 50,50);
+		body = new Rectangle((int)this.x, (int)this.y, Player.playerDims,Player.playerDims);
 		 g.draw(body);
 		 g.rotate(this.deg);
 		g.draw(turret);
@@ -31,9 +32,6 @@ public class Player {
 	}
 	public void update(Graphics2D g){
 		if(!this.isAlive) return;
-//		System.out.println(this.mouseX + " | " + this.mouseY);
-//		this.mouseX = input.cursorPos.getX();
-//		this.mouseY = input.cursorPos.getY();
 		double offset = (this.mouseX>=x+25) ? 0 : Math.PI;
 		deg = offset + Math.atan((this.mouseY-(y+25))/(this.mouseX-(x+25)));
 		turret.setFrameFromDiagonal(
@@ -43,6 +41,7 @@ public class Player {
 				findAngle(x+25 + 40 * Math.cos(deg) - 5 * Math.sin(deg),
 						y+25 + 40 * Math.sin(deg) + 5 * Math.cos(deg),
 						-deg));
+		this.cooldown--;
 		this.updateBullets();
 		this.calcMove();
 		this.draw(g);
@@ -52,10 +51,14 @@ public class Player {
 		double yNew = x * Math.sin(angle) + y * Math.cos(angle);
 		return new Point2D.Double(xNew, yNew);
 	}
-	public void shoot(double angle) {
+	private int cooldown = 0;
+	public boolean shoot(double angle) {
+		if(cooldown>0) return false;
 		Point2D bulletMiddle = new Point2D.Double(x+25 + Math.cos(deg) * 45, y+25 + Math.sin(deg) * 45);
 		Bullet bullet = new Bullet(bulletMiddle.getX(), bulletMiddle.getY(), deg, ID);
 		bullets.add(bullet);
+		cooldown = 100;
+		return true;
 	}
 
 
@@ -75,7 +78,8 @@ public class Player {
 		}
 	}
 	public boolean inHitBox(Rectangle2D object){
-		return new Rectangle((int)this.x,(int)this.y,50,50).intersects(object);
+		return new Rectangle((int)this.x,(int)this.y,
+		Player.playerDims,Player.playerDims).intersects(object);
 	}
 	public boolean detectCollision(Rectangle2D hitbox) { // Returns true if collides I don't think this logically fits with what I've done in other boolean methods but it's fine I guess as long as it works and no one has to see this
 		if (hitbox.getMaxX() > Game.currentGame.display.getWidth() ||
@@ -110,11 +114,13 @@ public class Player {
 	}
 	
 	public boolean checkCollision(double dx, double dy) {
-		Rectangle2D temp = new Rectangle2D.Double(body.getX()+dx, body.getY()+dy, 50, 50);
+		Rectangle2D temp = new Rectangle2D.Double(body.getX()+dx, body.getY()+dy, Player.playerDims, Player.playerDims);
 		for (Rectangle2D barrier : Game.currentGame.barriers) {
-			if (temp.intersects(barrier)) return false;
+			if (temp.intersects(barrier)) {return false;}
 		}
-		return true;
+		return !(temp.getMinX()<0 || temp.getMinY()<0 ||
+		temp.getMaxX()>Game.currentGame.display.getWidth()
+		|| temp.getMaxY()>Game.currentGame.display.getHeight());
 	}
 	
 	private void move() {

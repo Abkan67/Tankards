@@ -50,7 +50,7 @@ public class Protocol {
 		}
 		if(type.equals("MOVE")){
 			MOVE02PACKET p = new MOVE02PACKET(data);
-			if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
+			if(!Game.currentGame.getState().equals("playing") || p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
 			client.movePlayer(p);
 		}
 		if(type.equals("DISCONNECT")){
@@ -60,6 +60,10 @@ public class Protocol {
 		if(type.equals("CHANGESTATE")){
 			CHANGESTATE11PACKET p = new CHANGESTATE11PACKET(data);
 			Game.currentGame.setState(p.getState());
+			if(p.getState().equals("playing")){
+				Game.currentGame.maze = Maze.createMaze(p.getOtherInfo());
+				Game.currentGame.setBarriers();
+			}
 		}
 		if(type.equals("CHANGEANGLE")) {
 			CHANGEANGLE03PACKET p = new CHANGEANGLE03PACKET(data);
@@ -147,7 +151,9 @@ public class Protocol {
 		}
 		static class CHANGESTATE11PACKET{
 			private InetAddress address; private int port; private String state; private byte[] data;
+			private String otherInfo;
 			public static byte[] createPacket(String state){ return ("11"+findState(state)+";").getBytes();}
+			public static byte[] createPacket(String state, String otherInfo){ return ("11"+findState(state)+";"+otherInfo+";").getBytes();}
 			private static String findState(int state){switch(state){case 1: return "LOAD"; case 2: return "playing";default:return "INVALID";}}
 			private static int findState(String state){switch(state){case "playing": return 2; case "LOAD": return 1; default: return 0;}}
 
@@ -155,14 +161,21 @@ public class Protocol {
 				this.port=port; this.address = address; this.data = data;
 				String[] allData = getFormattedData(data).split(";");
 				this.state = findState(Integer.parseInt(allData[0]));
+				if(allData.length >1){
+					otherInfo = allData[1];
+				}
 			}
 			public String getState(){return state;}
 			public byte[] getData(){return this.data;}
+			public String getOtherInfo() {return this.otherInfo;}
 
 			public CHANGESTATE11PACKET(byte[] data){
 				this.data = data;
 				String[] allData = getFormattedData(data).split(";");
 				this.state = findState(Integer.parseInt(allData[0]));
+				if(allData.length >1){
+					otherInfo = allData[1];
+				}
 			}
 		}
 		static class DISCONNECT01PACKET {

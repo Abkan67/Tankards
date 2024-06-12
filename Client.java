@@ -25,7 +25,7 @@ public class Client extends Thread{
 	
     public void run() {
         while (running) {
-            byte[] data = new byte[1024];
+            byte[] data = new byte[4096];
             DatagramPacket packet = new DatagramPacket(data, data.length);
                 try {
                     socket.receive(packet);
@@ -33,7 +33,7 @@ public class Client extends Thread{
                     e.printStackTrace(); closeEverything();
                 }
             String incomingMessage = new String(packet.getData());
-//            System.out.println("Client: Look at that! The Server Sent-> "+ incomingMessage);
+            //System.out.println("Client: Look at that! The Server Sent-> "+ incomingMessage);
             this.handleData(packet);
         }
     }

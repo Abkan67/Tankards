@@ -17,7 +17,7 @@ public class Server extends Thread {
 	
 	public void run() {
 		while(running) {
-			byte[] data = new byte[80];
+			byte[] data = new byte[4096];
 			DatagramPacket packet = new DatagramPacket(data, data.length);
 			try {socket.receive(packet);}
 			catch(IOException e) {e.printStackTrace();}
