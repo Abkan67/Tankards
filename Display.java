@@ -4,9 +4,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
@@ -52,6 +58,8 @@ public class Display extends JComponent{
 	}
 
 	public void drawPlaying(Graphics2D g) {
+		g.setColor(Color.GREEN);
+		g.fillRect(0, 0, getWidth(), getHeight());
 		g.setColor(Color.black);
 		int alivePlayers = 0;
 
@@ -63,13 +71,14 @@ public class Display extends JComponent{
 		}
 		if(alivePlayers<=1 && Game.currentGame.client.getAllPlayers().size()>1) {
 			Game.currentGame.state="victory";
+			
 		}
 
 	}
 	public void drawMaze(Graphics2D g, int[][] maze) {
 		g.setColor(new Color(74,71,51));
-		for(Rectangle2D barrier: this.game.barriers) {
-			g.fill(barrier);
+		for(int i = 0; i < this.game.barriers.size(); i++) {
+			this.game.barriers.get(i).draw(g);
 		}
 		g.setColor(Color.BLACK);
 	}
@@ -118,7 +127,7 @@ public class Display extends JComponent{
 		}
 		if(Game.currentGame.player.isHost()){
 			g.setColor(Color.black);
-			g.drawString("Press ENTER to start", getWidth()/2-100, 250);
+			g.drawString("Press ENTER to start", getWidth()/2-60, 275);
 		}
 		
 	}

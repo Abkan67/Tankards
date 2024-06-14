@@ -9,7 +9,7 @@ public class Bullet {
 		this.x=x; this.y = y; this.direction=direction; this.ID = ID; this.body = new Ellipse2D.Double(x, y, 10, 10);
 	}
 	public Rectangle2D updateBody() {
-		body.setFrame(new Rectangle2D.Double(body.getX()+Math.cos(direction), body.getY() + Math.sin(direction), 10, 10));
+		body.setFrame(new Rectangle2D.Double(body.getX()+Math.cos(direction)*1.5, body.getY() + Math.sin(direction)*1.5, 10, 10));
 		return body.getFrame();
 	}
 }

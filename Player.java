@@ -1,8 +1,14 @@
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 public class Player {
 	public static int playerDims = 50;
@@ -23,11 +29,22 @@ public class Player {
 	public void draw(Graphics2D g) {
 		g.drawString(""+this.name, (int)this.x, (int)this.y);
 		body = new Rectangle((int)this.x, (int)this.y, Player.playerDims,Player.playerDims);
+		BufferedImage tank;
+		try {
+			tank = ImageIO.read(new File("./src/Resources/tank.png"));
+			g.drawImage(tank, (int)body.getX(), (int)body.getY(), (int)body.getMaxX(), (int)body.getMaxY(), 0, 0, tank.getWidth(), tank.getHeight(), null);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		 g.draw(body);
 		 g.rotate(this.deg);
+		 g.setColor(Color.LIGHT_GRAY);
+		 g.fill(turret);
+		 g.setColor(Color.black);
 		g.draw(turret);
 		g.rotate(-this.deg);
-		for (Bullet bullet : bullets) g.draw(bullet.body);
+		for (Bullet bullet : bullets) { g.setColor(Color.CYAN); g.fill(bullet.body); g.setColor(Color.black); g.draw(bullet.body);}
 	}
 	public void update(Graphics2D g){
 		if(!this.isAlive) return;
@@ -64,7 +81,7 @@ public class Player {
 		Point2D bulletMiddle = new Point2D.Double(x+25 + Math.cos(deg) * 45, y+25 + Math.sin(deg) * 45);
 		Bullet bullet = new Bullet(bulletMiddle.getX(), bulletMiddle.getY(), deg, ID);
 		bullets.add(bullet);
-		cooldown = 100;
+		cooldown = 80;
 		return true;
 	}
 
@@ -75,7 +92,7 @@ public class Player {
 			Rectangle2D newHitbox = bullets.get(i).updateBody();
 			boolean wasRemoved = false;
 			for(int b = 0; b<Game.currentGame.barriers.size(); b++) {
-				Rectangle2D barrier = Game.currentGame.barriers.get(b);
+				Rectangle2D barrier = Game.currentGame.barriers.get(b).hitbox;
 				if (newHitbox.intersects(barrier)) {
 					bullets.remove(bullets.get(i--));
 					Game.currentGame.damageBarrier(b);
@@ -102,8 +119,8 @@ public class Player {
 				hitbox.getMinX() < 0 ||
 				hitbox.getMinY() < 0 ||
 				hitbox.getMaxY() > Game.currentGame.display.getHeight()) return true;
-		for (Rectangle2D barrier: Game.currentGame.barriers) {
-			if (hitbox.intersects(barrier)) {System.out.println();return true;}
+		for (Barrier barrier: Game.currentGame.barriers) {
+			if (hitbox.intersects(barrier.hitbox)) {System.out.println();return true;}
 		}
 		return false;
 	}
@@ -132,8 +149,8 @@ public class Player {
 	
 	public boolean checkCollision(double dx, double dy) {
 		Rectangle2D temp = new Rectangle2D.Double(body.getX()+dx, body.getY()+dy, Player.playerDims, Player.playerDims);
-		for (Rectangle2D barrier : Game.currentGame.barriers) {
-			if (temp.intersects(barrier)) {return false;}
+		for (Barrier barrier : Game.currentGame.barriers) {
+			if (temp.intersects(barrier.hitbox)) {return false;}
 		}
 		return !(temp.getMinX()<0 || temp.getMinY()<0 ||
 		temp.getMaxX()>Game.currentGame.display.getWidth()

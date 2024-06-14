@@ -50,7 +50,7 @@ public class Protocol {
 		}
 		if(type.equals("MOVE")){
 			MOVE02PACKET p = new MOVE02PACKET(data);
-			//if(!Game.currentGame.getState().equals("playing") || p.getID() != Game.currentGame.player.getID()) 
+			if(!Game.currentGame.getState().equals("playing") || p.getID() != Game.currentGame.player.getID()) 
 			client.movePlayer(p);
 		}
 		if(type.equals("DISCONNECT")){

@@ -9,7 +9,7 @@ public class Input implements KeyListener, MouseListener{
     public InputKey rightArrow = new InputKey();public InputKey leftArrow = new InputKey();
     public InputKey downArrow = new InputKey();public InputKey upArrow = new InputKey();
     public InputKey space = new InputKey();
-     private boolean mouseAiming; public Point2D cursorPos = new Point2D.Double();
+     public boolean mouseAiming; public Point2D cursorPos = new Point2D.Double();
      
     Input(Game game){
         this.game=game;
@@ -93,7 +93,7 @@ public class Input implements KeyListener, MouseListener{
 			public void run() {
 				// TODO Auto-generated method stub
 				while(mouseAiming) {
-                    if(!Game.currentGame.player.input.space.isPressed()){
+                    if(!Game.currentGame.player.input.space.isPressed()&&game.display.getMousePosition() != null){
 					    cursorPos = new Point2D.Double(game.display.getMousePosition().getX(),game.display.getMousePosition().getY());
 		                Game.gameClient.sendData(Protocol.CHANGEANGLE03PACKET.createPacket(Game.currentGame.player.ID, cursorPos.getX(), cursorPos.getY()));
                     }

@@ -1,5 +1,10 @@
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 public class Game {
@@ -9,7 +14,7 @@ public class Game {
 	public static int gameHeight = 10;
 	public Maze maze;
 	Display display; Server server; Client client; PlayerConnection player; private Animation animator; private Window windowhandler;
-	String state = ""; ArrayList<Rectangle2D> barriers = new ArrayList<>();
+	String state = ""; ArrayList<Barrier> barriers = new ArrayList<>();
 	Game() {
 		currentGame = this;
 		this.display = new Display(this);
@@ -59,17 +64,18 @@ public class Game {
 		new Game();
 	}
 	public void setBarriers() {
-		this.barriers = new ArrayList<Rectangle2D>();
+		this.barriers = new ArrayList<Barrier>();
 		int[][] maze = this.maze.getMaze();
 		for(int row = 0; row<maze.length; row++){
 			for(int col = 0; col<maze[0].length; col++) {
 				if(maze[row][col] == 1) {
-					this.barriers.add(
-						new Rectangle2D.Double(this.display.getWidth()*col/maze[row].length,
+					this.barriers.add(new Barrier(
+						this.display.getWidth()*col/maze[row].length,
 						this.display.getHeight()*row/maze.length,
 						this.display.getWidth()/maze[row].length,
 						this.display.getHeight()/maze.length)
 					);
+					
 				}
 			}
 		}
