@@ -8,14 +8,14 @@ public class Input implements KeyListener, MouseListener{
     private Game game;
     public InputKey rightArrow = new InputKey();public InputKey leftArrow = new InputKey();
     public InputKey downArrow = new InputKey();public InputKey upArrow = new InputKey();
+    public InputKey space = new InputKey();
      private boolean mouseAiming; public Point2D cursorPos = new Point2D.Double();
      
     Input(Game game){
         this.game=game;
         this.game.display.getFrame().addKeyListener(this);this.game.display.getFrame().addMouseListener(this);
     }
-    Input(){ // For non-local sources
-    }
+    Input(){ /*  For non-local sources*/}
     public static class InputKey{
         private boolean isPressed = false;
         public boolean isPressed () {return this.isPressed;}
@@ -29,9 +29,12 @@ public class Input implements KeyListener, MouseListener{
                 Point2D.Double p = getStartingLocation(i++);
                 Game.currentGame.client.sendData(Protocol.MOVE02PACKET.createPacket(player.getID(), (int)p.getX(), (int)p.getY()));
             }
-            //Maze maze = new Maze(4, 3, 3);
             Game.currentGame.client.sendData(Protocol.CHANGESTATE11PACKET.createPacket("playing", Maze.dissembleMaze(Game.currentGame.maze)));
         }
+        //if(Game.currentGame.state.equals("victory")&&Game.currentGame.player.isHost()&&e.getKeyCode() == KeyEvent.VK_R) {
+            //Game.currentGame.maze = Maze.makeMaze();
+            //Game.currentGame.client.sendData(Protocol.CHANGESTATE11PACKET.createPacket("playing", Maze.dissembleMaze(Game.currentGame.maze)));
+        //}
     }
     public Point2D.Double getStartingLocation(int i) {
         int height = Game.currentGame.display.getHeight();
@@ -58,6 +61,8 @@ public class Input implements KeyListener, MouseListener{
             case KeyEvent.VK_D: this.rightArrow.changePress(isPressed);break;
             case KeyEvent.VK_LEFT: this.leftArrow.changePress(isPressed);break;
             case KeyEvent.VK_A: this.leftArrow.changePress(isPressed);break;
+            case KeyEvent.VK_SPACE: this.space.changePress(isPressed); break;
+            default: break;
         }
     }
 
@@ -88,8 +93,10 @@ public class Input implements KeyListener, MouseListener{
 			public void run() {
 				// TODO Auto-generated method stub
 				while(mouseAiming) {
-					cursorPos = new Point2D.Double(game.display.getMousePosition().getX(),game.display.getMousePosition().getY());
-		            Game.gameClient.sendData(Protocol.CHANGEANGLE03PACKET.createPacket(Game.currentGame.player.ID, cursorPos.getX(), cursorPos.getY()));
+                    if(!Game.currentGame.player.input.space.isPressed()){
+					    cursorPos = new Point2D.Double(game.display.getMousePosition().getX(),game.display.getMousePosition().getY());
+		                Game.gameClient.sendData(Protocol.CHANGEANGLE03PACKET.createPacket(Game.currentGame.player.ID, cursorPos.getX(), cursorPos.getY()));
+                    }
 				}
 			}
 			

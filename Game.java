@@ -30,8 +30,8 @@ public class Game {
 			server.start();
 			client = new Client("localhost", serverPort, this);
 		} else{
-			address = "#";//JOptionPane.showInputDialog(this.display, "Where is your host? (use # to access presets)");
-			port = "3000";//JOptionPane.showInputDialog(this.display, "What is the host's number code?");
+			address = "#";JOptionPane.showInputDialog(this.display, "Where is your host? (use # to access presets, or paste in an IP Address)");
+			port = "3000";JOptionPane.showInputDialog(this.display, "What is the host's number code/port?");
 			client = new Client(Client.decodeAddress(address), Integer.parseInt(port), this);
 		}
 		
@@ -59,6 +59,7 @@ public class Game {
 		new Game();
 	}
 	public void setBarriers() {
+		this.barriers = new ArrayList<Rectangle2D>();
 		int[][] maze = this.maze.getMaze();
 		for(int row = 0; row<maze.length; row++){
 			for(int col = 0; col<maze[0].length; col++) {
@@ -72,7 +73,20 @@ public class Game {
 				}
 			}
 		}
+		for(int i = 0; i<this.barriers.size(); i++) {
+			this.barrierHealth.add(5);
+		}
 	}
 
+	public ArrayList<Integer> barrierHealth = new ArrayList<Integer>();
+    public boolean damageBarrier(int b) {
+		barrierHealth.set(b, barrierHealth.get(b)-1);
+		if(barrierHealth.get(b)<=0) {
+			barriers.remove(b);
+			barrierHealth.remove(b);
+			return true;
+		}
+		return false;
+    }
+
 }
-//Procedural maps

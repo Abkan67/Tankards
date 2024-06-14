@@ -50,7 +50,7 @@ public class Protocol {
 		}
 		if(type.equals("MOVE")){
 			MOVE02PACKET p = new MOVE02PACKET(data);
-			if(!Game.currentGame.getState().equals("playing") || p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
+			//if(!Game.currentGame.getState().equals("playing") || p.getID() != Game.currentGame.player.getID()) 
 			client.movePlayer(p);
 		}
 		if(type.equals("DISCONNECT")){
@@ -67,13 +67,13 @@ public class Protocol {
 		}
 		if(type.equals("CHANGEANGLE")) {
 			CHANGEANGLE03PACKET p = new CHANGEANGLE03PACKET(data);
-			//if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
+			//if(p.getID() != Game.currentGame.player.getID())
 			client.anglePlayer(p);
 			
 		}
 		if(type.equals("MOUSECLICK")) {
 			MOUSECLICK04PACKET p = new MOUSECLICK04PACKET(data);
-			if(p.getID() != Game.currentGame.player.getID()) //TODO: actually remove this when your not nyooming
+			if(p.getID() != Game.currentGame.player.getID()) 
 			client.playerShoot(p);
 			
 		}

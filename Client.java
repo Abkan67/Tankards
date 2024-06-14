@@ -61,6 +61,7 @@ public class Client extends Thread{
         else{
             switch(address.substring(1)){
                 case "": return "localhost";
+                case "pad": return "192.168.87.26";
                 default: return address;
             }
         }

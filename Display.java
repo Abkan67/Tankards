@@ -3,6 +3,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -17,9 +20,8 @@ public class Display extends JComponent{
 		this.frame.setResizable(false);
 		this.frame.setTitle("Untitles Tank Game");
 		this.frame.setDefaultCloseOperation(3);
-		this.frame.add(this);
 		this.frame.setVisible(true);
-
+		this.frame.add(this);
 
 
 
@@ -35,10 +37,17 @@ public class Display extends JComponent{
 			this.drawConnecting(g);
 		}
 		if(Game.currentGame.state.equals("victory")) {
+			drawPlaying(g);
 			drawVictory(g);
 		}
 		if(Game.currentGame.state.equals("playing")){
 			drawPlaying(g);
+			if(!Game.currentGame.player.inRadarMode) {
+				drawBlindness(g);
+			}
+			if(Game.currentGame.player.input.space.isPressed()) {
+				drawBar(g);
+			}
 		}
 	}
 
@@ -52,22 +61,36 @@ public class Display extends JComponent{
 			playerConnection.update(g);
 			alivePlayers+= playerConnection.isAlive?1:0;
 		}
-		if(alivePlayers<=1) {
+		if(alivePlayers<=1 && Game.currentGame.client.getAllPlayers().size()>1) {
 			Game.currentGame.state="victory";
 		}
 
 	}
 	public void drawMaze(Graphics2D g, int[][] maze) {
-		for (int r = 0; r < maze.length; r++) {
-			for (int c = 0; c < maze[r].length; c++) {
-				g.setColor(Color.black);
-				if (maze[r][c]==1) {g.fill(new Rectangle2D.Double(getWidth()*c/maze[r].length,
-					getHeight()*r/maze.length,getWidth()/maze[r].length,getHeight()/maze.length));}
-			}
+		g.setColor(new Color(74,71,51));
+		for(Rectangle2D barrier: this.game.barriers) {
+			g.fill(barrier);
 		}
+		g.setColor(Color.BLACK);
+	}
+	public void drawBlindness(Graphics2D g) {
+		g.setColor(Color.black);
+		Area blind = new Area(new Rectangle(0,0,1000,1000));
+		Player p = Game.currentGame.player;
+		blind.subtract(new Area(new Ellipse2D.Double(p.getX()-Player.playerDims, p.getY()-Player.playerDims, 
+		Player.playerDims*3.0, Player.playerDims*3.0)));
+		g.fill(blind);
+	}
+	public void drawBar(Graphics2D g) {
+		g.setColor(Color.white);
+		g.fill(new Rectangle(Game.currentGame.player.getX() - Player.playerDims/2, 
+		Game.currentGame.player.getY()+100, Player.playerDims*2, 10));
+		g.setColor(Color.green);
+		g.fill(new Rectangle(Game.currentGame.player.getX() - Player.playerDims/2, Game.currentGame.player.getY()+100,
+		 (int)(Math.min(500, 500-Game.currentGame.player.changeStateTimer) * (Player.playerDims/250.0)),10));
 	}
 	public void drawVictory(Graphics2D g) {
-		g.setColor(Color.blue);
+		g.setColor(Color.white);
 		g.fillRect(50,50,100,50);
 		for(PlayerConnection playerConnection: this.game.client.getAllPlayers()){
 			if(playerConnection.isAlive) {
@@ -104,7 +127,7 @@ public class Display extends JComponent{
 		g.fillRect(0, 0, getWidth(), getHeight());
 		g.setColor(Color.white);
 		g.setFont(new Font(g.getFont().getFontName(), Font.PLAIN, 40));
-		g.drawString("T A N K A R D S", 0, 100);
+		g.drawString("T A N K A R D S", 300, 100);
 	}
 
 

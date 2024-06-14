@@ -6,10 +6,12 @@ import java.util.ArrayList;
 
 public class Player {
 	public static int playerDims = 50;
-	public double vx, vy, x, y, speed = 1, deg; private String name; private Input input; public int ID; private Rectangle2D body, turret;
+	public double vx, vy, x, y, speed = 1, deg; private String name; public Input input; public int ID; private Rectangle2D body, turret;
 	private ArrayList<Bullet> bullets = new ArrayList<>();
 	public double mouseX, mouseY;
 	public boolean isAlive = true;
+	public boolean inRadarMode = false;
+	 public int changeStateTimer = 500;
 	Player(int x,int y, String name, Input input, int ID) {
 		this.x=x;this.y=y; this.name=name; this.input = input; this.ID = ID; this.body=new Rectangle2D.Double(); this.turret = new Rectangle2D.Double();
 	}
@@ -27,9 +29,6 @@ public class Player {
 		g.rotate(-this.deg);
 		for (Bullet bullet : bullets) g.draw(bullet.body);
 	}
-	public void drawBlindness(Graphics2D g) {
-		
-	}
 	public void update(Graphics2D g){
 		if(!this.isAlive) return;
 		double offset = (this.mouseX>=x+25) ? 0 : Math.PI;
@@ -42,6 +41,13 @@ public class Player {
 						y+25 + 40 * Math.sin(deg) + 5 * Math.cos(deg),
 						-deg));
 		this.cooldown--;
+		if(this.input.space.isPressed()) {
+			this.changeStateTimer--;
+			if(this.changeStateTimer<=0){this.inRadarMode = true;}
+		} else {
+			this.changeStateTimer = 500;
+			this.inRadarMode = false;
+		}
 		this.updateBullets();
 		this.calcMove();
 		this.draw(g);
@@ -54,6 +60,7 @@ public class Player {
 	private int cooldown = 0;
 	public boolean shoot(double angle) {
 		if(cooldown>0) return false;
+		if(input.space.isPressed()) return false;
 		Point2D bulletMiddle = new Point2D.Double(x+25 + Math.cos(deg) * 45, y+25 + Math.sin(deg) * 45);
 		Bullet bullet = new Bullet(bulletMiddle.getX(), bulletMiddle.getY(), deg, ID);
 		bullets.add(bullet);
@@ -63,14 +70,23 @@ public class Player {
 
 
 
-	public void updateBullets() { //updates all bullets or???
+	public void updateBullets() { 
 		for (int i = 0; i < bullets.size(); i++) {
 			Rectangle2D newHitbox = bullets.get(i).updateBody();
-			if (detectCollision(newHitbox)) {
+			boolean wasRemoved = false;
+			for(int b = 0; b<Game.currentGame.barriers.size(); b++) {
+				Rectangle2D barrier = Game.currentGame.barriers.get(b);
+				if (newHitbox.intersects(barrier)) {
+					bullets.remove(bullets.get(i--));
+					Game.currentGame.damageBarrier(b);
+					wasRemoved = true;
+				}
+			}
+			if (!wasRemoved && detectCollision(newHitbox)) {
 				bullets.remove(bullets.get(i--));
 			}
 			for(PlayerConnection player : Game.currentGame.client.getAllPlayers()){
-				if (player.inHitBox(newHitbox)){
+				if (!wasRemoved && player.inHitBox(newHitbox)){
 					player.die();
 					bullets.remove(bullets.get(i--));
 				}
@@ -87,7 +103,7 @@ public class Player {
 				hitbox.getMinY() < 0 ||
 				hitbox.getMaxY() > Game.currentGame.display.getHeight()) return true;
 		for (Rectangle2D barrier: Game.currentGame.barriers) {
-			if (hitbox.intersects(barrier)) return true;
+			if (hitbox.intersects(barrier)) {System.out.println();return true;}
 		}
 		return false;
 	}
@@ -105,6 +121,7 @@ public class Player {
 
 	private void calcMove(){
 		if (this.input == null) return;
+		if (this.input.space.isPressed()) return;
 		this.vy = 0; this.vx = 0;
 		if(this.input.upArrow.isPressed() && checkCollision(0, -speed)) {this.vy = -speed;}
 		if(this.input.downArrow.isPressed() && checkCollision(0, speed)) {this.vy = speed;}
